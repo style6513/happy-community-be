@@ -6,10 +6,20 @@ const { UnauthorizedError } = require('../ExpressError');
 const { BCRYPT_WORK_FACTOR, SECRET } = require("../config");
 const jwt = require("jsonwebtoken");
 
+function createToken(user) {
+   console.assert(user.isAdmin !== undefined,
+      "createToken passed user without isAdmin property");
+   let payload = {
+      id: user._id,
+      isAdmin: user.isAdmin || false
+   };
+   return jwt.sign(payload, SECRET, { expiresIn: "3d" })
+};
+
 // REGISTER
 router.post("/register", async (req, res, next) => {
    const { username, email, password, phone } = req.body;
-   const hashedPw = await bcrypt.hash(password, 12);
+   const hashedPw = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
    const newUser = new User({
       username,
       email,
@@ -18,7 +28,9 @@ router.post("/register", async (req, res, next) => {
    });
    try {
       const savedUser = await newUser.save();
-      return res.status(201).json(savedUser);
+      const token = createToken(savedUser);
+      const { password, ...others } = savedUser;
+      return res.status(201).json({ ...others, token });
    } catch (e) {
       return next(e);
    }
@@ -32,17 +44,11 @@ router.post("/login", async (req, res, next) => {
 
       const isValid = await bcrypt.compare(password, user.password);
       if (isValid) {
-         const accessToken = jwt.sign({
-            id: user._id,
-            isAdmin: user._isAdmin || false
-         },
-            SECRET,
-            { expiresIn: "3d" }
-         );
+         const accessToken = createToken(user);
          const { password, ...others } = user._doc;
          return res.status(200).json({ ...others, accessToken })
       }
-
+      throw new UnauthorizedError("Invalid credentials")
    } catch (e) {
       return next(e);
    }
