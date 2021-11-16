@@ -64,7 +64,6 @@ function authenticateJWT(req, res, next) {
      return next(e);
    }
  }
-
 module.exports = {
    authenticateJWT,
    ensureLoggedIn,
