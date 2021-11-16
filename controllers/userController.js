@@ -16,7 +16,8 @@ router.put("/:id", ensureCorrectUserOrAdmin, async (req, res, next) => {
          new : true
       });
       return res.status(200).json({ updatedUser })
-   } catch(e) {
+   } 
+   catch(e) {
       return next(e);
    }
 });
@@ -26,7 +27,8 @@ router.delete("/:id", ensureCorrectUserOrAdmin, async (req, res, next) => {
    try {
       await User.findByIdAndDelete(req.params.id);
       return res.status(200).json({ deleted : req.params.id }); 
-   } catch(e) {
+   } 
+   catch(e) {
       return next(e);
    }
 })
@@ -37,7 +39,8 @@ router.get("/:id", async (req, res, next) => {
       const user = await User.findById(req.params.id);
       const { password, ...others } = user._doc;
       return res.status(200).json({ user : others })
-   } catch(e) {
+   } 
+   catch(e) {
       return next(e)
    }
 })
