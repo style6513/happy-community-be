@@ -1,19 +1,16 @@
 const mongoose = require('mongoose')
-const { MONGODB_URI } = require("../config");
+const DB_URL = process.env.DB_URL || 'mongodb://localhost/appname'
 
 // Error / Disconnection
-mongoose.connection.on('error', err => console.log(err.message + ' is Mongod not running?'))
-mongoose.connection.on('disconnected', () => console.log('mongo disconnected'))
+mongoose.connection.on('error', err => console.log(err.message + ' is Mongod not running?'));
+mongoose.connection.on('disconnected', () => console.log('mongo disconnected'));
 
-// How to connect to the database either via heroku or locally
-
-// const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/appname'
 
 // Connection string (we will be replacing this later with environmental variables)
-mongoose.connect(MONGODB_URI, {
+mongoose.connect(DB_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-})
+});
 mongoose.connection.once('open', ()=>{
     console.log('connected to mongoose...')
-})
+});
