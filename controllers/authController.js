@@ -9,17 +9,18 @@ const jsonschema = require("jsonschema");
 const userRegisterSchema = require("../validationSchema/userRegisterSchema.json");
 
 function createToken(user) {
-   console.assert(user.isAdmin !== undefined,
-      "createToken passed user without isAdmin property");
-   let payload = {
-      id: user._id,
-      isAdmin: user.isAdmin || false
-   };
-   return jwt.sign(payload, SECRET, { expiresIn: "3d" })
+    console.assert(user.isAdmin !== undefined,
+        "createToken passed user without isAdmin property");
+    let payload = {
+        id: user._id,
+        isAdmin: user.isAdmin || false
+    };
+    return jwt.sign(payload, SECRET, { expiresIn: "3d" })
 };
 
 // REGISTER
 router.post("/register", async (req, res, next) => {
+
    const validator = jsonschema.validate(req.body, userRegisterSchema);
    if(!validator.valid) {
       const errors = validator.errors.map(e => e.stack);
@@ -41,24 +42,25 @@ router.post("/register", async (req, res, next) => {
    } catch (e) {
       return next(e);
    }
+
 })
 
 // Login 
 router.post("/login", async (req, res, next) => {
-   try {
-      const user = await User.findOne({ username: req.body.username });
-      if (!user) throw new UnauthorizedError();
+    try {
+        const user = await User.findOne({ username: req.body.username });
+        if (!user) throw new UnauthorizedError();
 
-      const isValid = await bcrypt.compare(password, user.password);
-      if (isValid) {
-         const accessToken = createToken(user);
-         const { password, ...others } = user._doc;
-         return res.status(200).json({ ...others, accessToken })
-      }
-      throw new UnauthorizedError("Invalid credentials")
-   } catch (e) {
-      return next(e);
-   }
+        const isValid = await bcrypt.compare(password, user.password);
+        if (isValid) {
+            const accessToken = createToken(user);
+            const { password, ...others } = user._doc;
+            return res.status(200).json({ ...others, accessToken })
+        }
+        throw new UnauthorizedError("Invalid credentials")
+    } catch (e) {
+        return next(e);
+    }
 })
 
 module.exports = router;
