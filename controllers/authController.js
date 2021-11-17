@@ -2,9 +2,11 @@ const express = require('express');
 const User = require('../models/user');
 const router = express.Router();
 const bcrypt = require("bcryptjs");
-const { UnauthorizedError } = require('../ExpressError');
+const { UnauthorizedError, BadRequestError } = require('../ExpressError');
 const { BCRYPT_WORK_FACTOR, SECRET } = require("../config");
 const jwt = require("jsonwebtoken");
+const jsonschema = require("jsonschema");
+const userRegisterSchema = require("../validationSchema/userRegisterSchema.json");
 
 function createToken(user) {
     console.assert(user.isAdmin !== undefined,
@@ -18,22 +20,29 @@ function createToken(user) {
 
 // REGISTER
 router.post("/register", async (req, res, next) => {
-    const { username, email, password, phone } = req.body;
-    const hashedPw = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
-    const newUser = new User({
-        username,
-        email,
-        password: hashedPw,
-        phone
-    });
-    try {
-        const savedUser = await newUser.save();
-        const token = createToken(savedUser);
-        const { password, ...others } = savedUser;
-        return res.status(201).json({ ...others, token });
-    } catch (e) {
-        return next(e);
-    }
+
+   const validator = jsonschema.validate(req.body, userRegisterSchema);
+   if(!validator.valid) {
+      const errors = validator.errors.map(e => e.stack);
+      throw new BadRequestError(errors)
+   }
+   const { username, email, password, phone } = req.body;
+   const hashedPw = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
+   const newUser = new User({
+      username,
+      email,
+      password: hashedPw,
+      phone
+   });
+   try {
+      const savedUser = await newUser.save();
+      const token = createToken(savedUser);
+      const { password, ...others } = savedUser;
+      return res.status(201).json({ ...others, token });
+   } catch (e) {
+      return next(e);
+   }
+
 })
 
 // Login 
