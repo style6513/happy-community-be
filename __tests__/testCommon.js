@@ -11,14 +11,14 @@ const testDataSetup = async () => {
       username : "admin",
       password : "testpw",
       email : "admin@admin.com",
-      phone : 1234567,
+      phone : "213-111-2222",
       isAdmin : true
    });
    const _testUser = new User({
       username : "test",
       password : "testpw",
       email : "test@test.com",
-      phone : 1234567,
+      phone : "213-111-2222",
       isAdmin : false
    })
    const adminUser = await _adminUser.save();

@@ -15,13 +15,13 @@ describe("POST /auth/register", () => {
          "password": "testpw",
          "confirmPassword": "testpw",
          "email": "test@test.com",
-         "phone": 123456789,
+         "phone": "213-111-2222",
          "isAdmin": true
       });
       expect(res.body).toEqual({
          username: 'admin',
          email: 'test@test.com',
-         phone: 123456789,
+         phone: "213-111-2222",
          _id: expect.any(String),
          createdAt: expect.any(String),
          updatedAt: expect.any(String),
@@ -36,13 +36,13 @@ describe("POST /auth/register", () => {
          "password": "testpw",
          "confirmPassword": "testpw",
          "email": "test@test.com",
-         "phone": 123456789,
+         "phone": "213-111-2222",
          "isAdmin": false
       });
       expect(res.body).toEqual({
          username: 'test3',
          email: 'test@test.com',
-         phone: 123456789,
+         phone: "213-111-2222",
          _id: expect.any(String),
          createdAt: expect.any(String),
          updatedAt: expect.any(String),
@@ -56,7 +56,7 @@ describe("POST /auth/register", () => {
       const res = await request(app).post(`/auth/register`).send({
          "password": "testpw",
          "confirmPassword": "testpw",
-         "phone": 123456789,
+         "phone": "213-111-2222",
          "isAdmin": false
       });
       expect(res.statusCode).toBe(400)
@@ -68,7 +68,7 @@ describe("POST /auth/register", () => {
          "password": "testpw",
          "confirmPassword": "testpw",
          "email": "test@test.com",
-         "phone": 123456789,
+         "phone": "213-111-2222",
          "isAdmin": false
       });
       try {
@@ -77,7 +77,7 @@ describe("POST /auth/register", () => {
             "password": "testpw",
             "confirmPassword": "testpw",
             "email": "test@test.com",
-            "phone": 123456789,
+            "phone": "213-111-2222",
             "isAdmin": false
          });
       } catch (e) {
