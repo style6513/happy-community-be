@@ -86,4 +86,7 @@ describe("POST /auth/register", () => {
    });
 });
 
-afterAll(async () => await db.closeDatabase())
+afterAll(async () => {
+   // await db.clearDatabase()
+   await db.closeDatabase()
+})
