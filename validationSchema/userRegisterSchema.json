@@ -25,7 +25,7 @@
       "format": "email"
     },
     "phone": {
-      "type": "number"
+      "type": "string"
     },
     "isAdmin": {
       "type": "boolean"

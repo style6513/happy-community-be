@@ -29,7 +29,6 @@ function authenticateJWT(req, res, next) {
 
       if(!res.locals.user) throw new UnauthorizedError();
       return next();
-
    } catch(e) {
      return next(e);
    }
@@ -41,12 +40,10 @@ function authenticateJWT(req, res, next) {
   */
  function ensureAdmin(req, res, next) {
    try {
-
       if(!res.locals.user || !res.locals.user.isAdmin) {
          throw new UnauthorizedError();
       }
       return next();
-
    } catch(e) {
      return next(e)
    }
@@ -65,7 +62,6 @@ function authenticateJWT(req, res, next) {
        throw new UnauthorizedError();
      }
      return next();
-
    } catch(e) {
      return next(e);
    }

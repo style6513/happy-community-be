@@ -8,10 +8,14 @@ const { NotFoundError, UnauthorizedError } = require("./ExpressError");
 // // Routes Imports
 const authController = require("./controllers/authController");
 const appnameController = require('./controllers/appnameController');
+const userController = require("./controllers/userController");
+const { authenticateJWT } = require('./middlewares/authMiddlewares');
+const morgan = require('morgan');
+
+dotenv.config();
 
 // cors setup
 const whitelist = ["http://localhost:3000"]
-dotenv.config();
 app.use(cors({
    origin: function (origin, cb) {
       if (whitelist.includes(origin) || !origin) {
@@ -22,11 +26,14 @@ app.use(cors({
    }
 }));
 
+app.use(authenticateJWT)
+
 // Middleware
 app.use(express.json());
+app.use(morgan("dev"))
 app.use('/appname', appnameController);
 app.use('/auth', authController);
-
+app.use("/users", userController);
 
 app.use((req, res, next) => {
    return next(new NotFoundError());
