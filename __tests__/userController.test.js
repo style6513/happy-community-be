@@ -12,9 +12,7 @@ beforeAll(async () =>{
   testData = { ...res }
   console.log(testData)
 });
-afterEach(async () => {
-  await db.clearDatabase()
-});
+
 
 describe("PUT users/:id", () => {
   test("works for admin", async () => {
@@ -40,8 +38,23 @@ describe("PUT users/:id", () => {
       username : "newOne"
     })
     .set("authorization", `Bearer ${testData.testUserToken}`);
-    console.log(res.body)
-    // expect(res.body.updatedUser.username).toEqual("newOne")
+    expect(res.body.updatedUser.username).toEqual("newOne")
+  });
+
+  test("Unauth for invalid users", async () => {
+    const invalidUserToken = db.createToken({ id : 123456, isAdmin : false });
+    const res = await request(app).put(`/users/${testData.testUser._id}`).send({
+      username : "newOne"
+    })
+    .set("authorization", `Bearer ${invalidUserToken}`);
+    expect(res.statusCode).toEqual(401)
+  });
+
+  test("Unauth for anons", async () => {
+    const res = await request(app).put(`/users/${testData.testUser._id}`).send({
+      username : "newOne"
+    });
+    expect(res.statusCode).toEqual(401)
   })
 })
 
@@ -65,6 +78,55 @@ describe("DELETE /users/:id", () => {
   });
 });
 
+describe("GET /users/:id", () => {
+  test("works for admin", async () => {
+    const res = await request(app).get(`/users/${testData.adminUser._id}`).set("authorization", `Bearer ${testData.adminToken}`);
+    expect(res.body).toEqual({
+      user : {
+        _id: expect.any(String),
+        username: 'admin',
+        email: 'admin@admin.com',
+        phone: 1234567,
+        isAdmin: true,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        __v: 0
+      }
+    });
+  });
+  test("works for signed in users", async () => {
+    const res = await request(app).get(`/users/${testData.adminUser._id}`).set("authorization", `Bearer ${testData.testUserToken}`);
+    expect(res.body).toEqual({
+      user : {
+        _id: expect.any(String),
+        username: 'admin',
+        email: 'admin@admin.com',
+        phone: 1234567,
+        isAdmin: true,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        __v: 0
+      }
+    });
+  });
+  test("works for anons", async () => {
+    const res = await request(app).get(`/users/${testData.adminUser._id}`)
+    expect(res.body).toEqual({
+    user : {
+        _id: expect.any(String),
+        username: 'admin',
+        email: 'admin@admin.com',
+        phone: 1234567,
+        isAdmin: true,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        __v: 0
+      }
+    })
+  })
+})
 
-
-afterAll(async () => await db.closeDatabase())
+afterAll(async () => {
+  await db.clearDatabase()
+  await db.closeDatabase()
+})
