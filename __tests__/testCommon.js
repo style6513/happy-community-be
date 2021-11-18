@@ -1,7 +1,33 @@
 const mongoose = require("mongoose");
 const { MongoMemoryServer } = require("mongodb-memory-server");
-const { MONGODB_URI } = require("../config");
+const { SECRET } = require("../config");
+const User = require("../models/user");
+const jwt = require("jsonwebtoken");
 let mongod = MongoMemoryServer
+
+
+const testDataSetup = async () => {
+   const _adminUser = new User({
+      username : "admin",
+      password : "testpw",
+      email : "admin@admin.com",
+      phone : 1234567,
+      isAdmin : true
+   });
+   const _testUser = new User({
+      username : "test",
+      password : "testpw",
+      email : "test@test.com",
+      phone : 1234567,
+      isAdmin : false
+   })
+   const adminUser = await _adminUser.save();
+   const adminToken = this.createToken(adminUser);
+   const testUser = await _testUser.save();
+   const testUserToken = this.createToken(testUser);
+   return  { adminToken, testUserToken, adminUser : adminUser._doc, testUser : testUser._doc }
+}
+
 
 // connect to test db
 module.exports.connect = async (callback) => {
@@ -15,7 +41,6 @@ module.exports.connect = async (callback) => {
    }
    mongoose.connection.on('error', (e) => {
       if (e.message.code === 'ETIMEDOUT') {
-         console.log(e);
          mongoose.connect(uri, mongooseOpts);
       }
       console.log(e);
@@ -45,8 +70,6 @@ module.exports.clearDatabase = async () => {
 }
 
 module.exports.createToken = (user) => {
-   console.assert(user.isAdmin !== undefined,
-      "createToken passed user without isAdmin property");
    let payload = {
       id: user._id,
       isAdmin: user.isAdmin || false
@@ -54,3 +77,4 @@ module.exports.createToken = (user) => {
    return jwt.sign(payload, SECRET, { expiresIn: "3d" })
 };
 
+module.exports.testDataSetup = testDataSetup;

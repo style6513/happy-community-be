@@ -19,9 +19,10 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb-memory-server": "^8.0.2",
     "mongoose": "^6.0.12",
+    "morgan": "^1.10.0",
     "supertest": "^6.1.6"
   },
-  "jest" : {
-    "testEnvironment" : "node"
+  "jest": {
+    "testEnvironment": "node"
   }
 }

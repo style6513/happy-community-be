@@ -3,8 +3,9 @@ const mongoose = require('mongoose');
 const userSchema = mongoose.Schema({
     username: {
         type: String,
-        required: true,
-        unique: true
+        required: [true, "cant't be blank"],
+        match : [/^[a-zA-Z0-9]+$/, 'is invalid'],
+        unique : true
     },
     password: {
         type: String,
@@ -12,7 +13,9 @@ const userSchema = mongoose.Schema({
     },
     email: {
         type: String,
-        required: true
+        required: [true, "can't be blank"],
+        match: [/\S+@\S+\.\S+/, 'is invalid'],
+        unique : true
     },
     phone: {
         type: Number,
