@@ -9,8 +9,6 @@ const jsonschema = require("jsonschema");
 const userRegisterSchema = require("../validationSchema/userRegisterSchema.json");
 
 function createToken(user) {
-    console.assert(user.isAdmin !== undefined,
-        "createToken passed user without isAdmin property");
     let payload = {
         id: user._id,
         isAdmin: user.isAdmin || false
@@ -20,38 +18,38 @@ function createToken(user) {
 
 // REGISTER
 router.post("/register", async (req, res, next) => {
+    const validator = jsonschema.validate(req.body, userRegisterSchema);
+    if (!validator.valid) {
+        const errors = validator.errors.map(e => e.stack);
+        return next(new BadRequestError(errors))
+    }
+    try {
+        const { username, email, phone } = req.body;
+        const hashedPw = await bcrypt.hash(req.body.password, BCRYPT_WORK_FACTOR);
+        const newUser = new User({
+            username,
+            email,
+            password: hashedPw,
+            phone,
+            isAdmin : req.body.isAdmin || false
+        });
 
-   const validator = jsonschema.validate(req.body, userRegisterSchema);
-   if(!validator.valid) {
-      const errors = validator.errors.map(e => e.stack);
-      throw new BadRequestError(errors)
-   }
-   const { username, email, password, phone } = req.body;
-   const hashedPw = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
-   const newUser = new User({
-      username,
-      email,
-      password: hashedPw,
-      phone
-   });
-   try {
-      const savedUser = await newUser.save();
-      const token = createToken(savedUser);
-      const { password, ...others } = savedUser;
-      return res.status(201).json({ ...others, token });
-   } catch (e) {
-      return next(e);
-   }
-
+        const savedUser = await newUser.save();
+        const token = createToken(savedUser);
+        const { password, ...others } = savedUser._doc;
+        return res.status(201).json({ ...others, token });
+    } catch (e) {
+        return next(e);
+    }
 })
 
 // Login 
 router.post("/login", async (req, res, next) => {
     try {
         const user = await User.findOne({ username: req.body.username });
-        if (!user) throw new UnauthorizedError();
+        if (!user) return next(new UnauthorizedError()) 
 
-        const isValid = await bcrypt.compare(password, user.password);
+        const isValid = await bcrypt.compare(req.body.password, user.password);
         if (isValid) {
             const accessToken = createToken(user);
             const { password, ...others } = user._doc;

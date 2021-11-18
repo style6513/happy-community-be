@@ -1,4 +1,6 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+mongoose.set("debug", true);
+mongoose.Promise = Promise;
 const { MONGODB_URI } = require("../config");
 // const DB_URL = process.env.DB_URL || 'mongodb://localhost/appname'
 
