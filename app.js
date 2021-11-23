@@ -9,7 +9,7 @@ const { NotFoundError, UnauthorizedError } = require("./ExpressError");
 const authController = require("./controllers/authController");
 const appnameController = require('./controllers/appnameController');
 const userController = require("./controllers/userController");
-const postController = require("./controller/postController");
+const postController = require("./controllers/postController");
 const { authenticateJWT } = require('./middlewares/authMiddlewares');
 const morgan = require('morgan');
 
