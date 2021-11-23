@@ -28,10 +28,22 @@ const userSchema = new mongoose.Schema({
             message : props => `${props.value} is not a valid phone number`
         },
         required : [true, "can't be blank"],
-        
+    },
+    profilePicture : {
+      type : String,
+      default : ""  
+    },
+    followers : {
+        type : Array,
+        default : []
+    },
+    following : {
+        type : Array,
+        default : []
     },
     isAdmin : {
         type : Boolean,
+        default : false
     }
 },{timestamps: true,});
 

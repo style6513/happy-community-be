@@ -55,7 +55,7 @@ router.post("/login", async (req, res, next) => {
             const { password, ...others } = user._doc;
             return res.status(200).json({ ...others, accessToken })
         }
-        throw new UnauthorizedError("Invalid credentials")
+        return next(new UnauthorizedError("Invalid credentials"))
     } catch (e) {
         return next(e);
     }

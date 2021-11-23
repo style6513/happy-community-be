@@ -9,6 +9,7 @@ const { NotFoundError, UnauthorizedError } = require("./ExpressError");
 const authController = require("./controllers/authController");
 const appnameController = require('./controllers/appnameController');
 const userController = require("./controllers/userController");
+const postController = require("./controller/postController");
 const { authenticateJWT } = require('./middlewares/authMiddlewares');
 const morgan = require('morgan');
 
@@ -34,6 +35,8 @@ app.use(morgan("dev"))
 app.use('/appname', appnameController);
 app.use('/auth', authController);
 app.use("/users", userController);
+app.use("/posts", postController);
+
 
 app.use((req, res, next) => {
    return next(new NotFoundError());
