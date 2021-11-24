@@ -1,5 +1,5 @@
 const express = require('express');
-const User = require('../models/user');
+const User = require('../models/User');
 // const router = express.Router();
 const bcrypt = require("bcryptjs");
 const { UnauthorizedError, BadRequestError } = require('../ExpressError');
@@ -35,7 +35,7 @@ exports.register = async (req, res, next) => {
         });
 
         const savedUser = await newUser.save();
-        const token = createToken(savedUser);
+        const token = this.createToken(savedUser);
         const { password, ...others } = savedUser._doc;
         return res.status(201).json({ ...others, token });
     } catch (e) {
@@ -50,7 +50,7 @@ exports.login = async (req, res, next) => {
 
         const isValid = await bcrypt.compare(req.body.password, user.password);
         if (isValid) {
-            const accessToken = createToken(user);
+            const accessToken = this.createToken(user);
             const { password, ...others } = user._doc;
             return res.status(200).json({ ...others, accessToken })
         }

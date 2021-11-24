@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const uniqueValidator = require("mongoose-unique-validator");
 
-
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -17,7 +16,8 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, "can't be blank"],
         match: [/\S+@\S+\.\S+/, 'is invalid'],
-        unique : true
+        unique : true,
+        trim : true,
     },
     phone: {
         type: String,
@@ -27,11 +27,13 @@ const userSchema = new mongoose.Schema({
             },
             message : props => `${props.value} is not a valid phone number`
         },
-        required : [true, "can't be blank"],
+        trim : true,
+        required : [true, "can't be blank"]
     },
     profilePicture : {
       type : String,
-      default : ""  
+      default : "",
+      trim : true
     },
     followers : [{ type : mongoose.Schema.Types.ObjectId, ref : "User" }],
     followings : [{ type : mongoose.Schema.Types.ObjectId, ref : "User" }],
@@ -39,8 +41,22 @@ const userSchema = new mongoose.Schema({
         type : Boolean,
         default : false
     }
-},{timestamps: true,});
+},
+    {timestamps: true}
+);
 
 userSchema.plugin(uniqueValidator, { message : "is already taken" });
-
-module.exports = mongoose.model('User',userSchema);
+const User = mongoose.model("User", userSchema);
+const testUser = new User({
+    username : "testUser2",
+    password : "testPassword2",
+    email : "test@test2.com",
+    phone : "111-111-8581"
+})
+testUser.save().then(doc => {
+    console.log(doc);
+})
+.catch(err => {
+    console.log(err)
+})
+module.exports = User; 

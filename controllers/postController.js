@@ -1,9 +1,19 @@
-const router = require("express").Router();
-const User = require("../models/user");
-const { Post } = require("../models/post");
+// const router = require("express").Router();
+const User = require("../models/User");
+const  Post  = require("../models/Post");
 const { UnauthorizedError } = require("../ExpressError");
-const { ensureLoggedIn } = require("../middlewares/authMiddlewares");
+// const { ensureLoggedIn } = require("../middlewares/authMiddlewares");
 
+exports.getAllPosts = async (req, res, next) => {
+   try {
+      const queryObj = { ...req.query }
+      const excludedFields = ['page', 'sort', 'limit', 'fields'];
+      const posts = await Post.find(req.query)
+      return res.status(200).json(posts)
+   } catch(e) {
+      return next(e);
+   }
+}
 
 exports.createPost = async (req, res, next) => {
    const newPost = new Post(req.body);
@@ -16,10 +26,14 @@ exports.createPost = async (req, res, next) => {
 }
 
 exports.updatePost = async (req, res, next) => {
-   const newPost = new Post(req.body);
+   const post = await Post.findById(req.params.id);
    try {
-      const savedPost = await newPost.save();
-      return res.status(200).json(savedPost);
+      if(post.userId === req.body.userId) { 
+         await post.updateOne({ $set : req.body });
+         return res.status(200).json("the post has been updated")
+      } else {
+         return next(new UnauthorizedError())
+      }
    } catch(e) {
       return next(e);
    }
@@ -30,7 +44,7 @@ exports.deletePost = async (req, res, next) => {
       const post = await Post.findById(req.params.id);
       if(post.userId === req.body.userId) { 
          await post.deleteOne();
-         return res.status(200).json("the post has been deleted")
+         return res.status(204).json("the post has been deleted")
       } else {
          return next(new UnauthorizedError())
       }

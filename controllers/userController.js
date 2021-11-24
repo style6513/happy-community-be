@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const User = require("../models/user");
+const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const { BCRYPT_WORK_FACTOR } = require("../config");
 const {
