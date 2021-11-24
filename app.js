@@ -6,14 +6,16 @@ const dotenv = require("dotenv");
 const { NotFoundError, UnauthorizedError } = require("./ExpressError");
 
 // // Routes Imports
-const authController = require("./controllers/authController");
+const authRouter = require("./routes/authRoutes");
 const appnameController = require('./controllers/appnameController');
 const userController = require("./controllers/userController");
-const postController = require("./controllers/postController");
+const postRouter = require("./routes/postRoutes");
 const { authenticateJWT } = require('./middlewares/authMiddlewares');
 const morgan = require('morgan');
 
-dotenv.config();
+if(process.env.NODE_ENV === "development") {
+   app.use(morgan("dev"))
+}
 
 // cors setup
 const whitelist = ["http://localhost:3000"]
@@ -31,11 +33,10 @@ app.use(authenticateJWT)
 
 // Middleware
 app.use(express.json());
-app.use(morgan("dev"))
 app.use('/appname', appnameController);
-app.use('/auth', authController);
+app.use('/auth', authRouter);
 app.use("/users", userController);
-app.use("/posts", postController);
+app.use("/posts", postRouter);
 
 
 app.use((req, res, next) => {
