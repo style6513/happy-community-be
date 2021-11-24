@@ -152,12 +152,48 @@ describe("GET /users/friends/:userId", () => {
 })
 
 describe("PUT users/:id/follow", () => {
+
   test("works : follows a user if not already followings", async () => {
     const res = await request(app).put(`/users/${testData.adminUser._id}/follow`).send({
       userId : testData.testUser._id
     })
-    .set("authorization", `Bearer ${testData.testUserToken}`)
+    .set("authorization", `Bearer ${testData.testUserToken}`);
+    expect(res.body).toEqual("user has been followed");
+    const verify = await User.findById(testData.adminUser._id);
+    expect(verify.followers.length).toEqual(1);
   });
+  test("403 error if you try to follow yourself", async () => {
+    const res = await request(app).put(`/users/${testData.adminUser._id}/follow`).send({
+      userId : testData.adminUser._id
+    })
+    .set("authorization", `Bearer ${testData.adminToken}`);
+    expect(res.statusCode).toEqual(403)
+  });
+  test("403 error if you try to follow a user that you're already following", async () => {
+    await request(app).put(`/users/${testData.testUser._id}/follow`).send({
+      userId : testData.adminUser._id
+    }).set("authorization", `Bearer ${testData.testUserToken}`);
+    const res = await request(app).put(`/users/${testData.testUser._id}/follow`).send({
+      userId : testData.adminUser._id
+    }).set("authorization", `Bearer ${testData.testUserToken}`);
+  })
+})
+
+
+describe("PUT users/:id/unfollow", () => {
+  test("works: unfollows a user", async () => {
+    await User.findOneAndUpdate({ _id: testData.adminUser._id }, { $addToSet: { followers: testData.testUser._id } }, { returnOriginal: false })
+    const res = await request(app).put(`/users/${testData.adminUser._id}/unfollow`).send({ userId : testData.testUser._id }).set("authorization", `Bearer ${testData.testUserToken}`);
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toEqual("user has been unfollowed")
+  });
+  test("403 error if you try to unfollow someone that you never followed", async () => {
+    const res = await request(app)
+      .put(`/users/${testData.adminUser._id}/unfollow`)
+      .send({ userId : testData.testUser._id })
+      .set("authorization", `Bearer ${testData.testUserToken}`);
+    expect(res.statusCode).toEqual(403)    
+  })
 })
 
 afterAll(async () => {

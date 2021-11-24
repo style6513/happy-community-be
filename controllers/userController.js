@@ -65,15 +65,19 @@ router.put("/:id/follow", ensureLoggedIn, async (req, res, next) => {
   try {
     if (req.body.userId !== req.params.id) {
       const user = await User.findById(req.params.id);
-      const currentUser = await User.findById(req.body.userId);
-
-      if (!user.followings.includes(req.body.userId)) {
-        await user.updateOne({ $push : { followers : req.body.userId }});
-        await currentUser.updateOne({ $push : { followings : req.params.id }})
-        console.log(user);
-        console.log(currentUser)
+      if (!user?.followings.includes(req.body.userId)) {
+        await User.findOneAndUpdate(
+          { _id: req.body.userId },
+          {
+            $addToSet: { followings: req.params.id }
+          },
+          { returnOriginal: false }
+        );
+        await User.findOneAndUpdate({ _id: req.params.id }, { $addToSet: { followers: req.body.userId } }, { returnOriginal: false })
         return res.status(200).json("user has been followed")
-      } else {
+        // return res.status(200).json(user)
+      }
+      else {
         return res.status(403).json("you already follow this user")
       }
     } else {
@@ -87,12 +91,12 @@ router.put("/:id/follow", ensureLoggedIn, async (req, res, next) => {
 // unfollow a user.
 router.put("/:id/unfollow", ensureLoggedIn, async (req, res, next) => {
   try {
-    if(req.body.userId !== req.params.id) {
+    if (req.body.userId !== req.params.id) {
       const user = await User.findById(req.params.id);
-      const currentUser = await User.findById(req.body.userId);
-      if(user.followers.includes(req.body.userId)) {
-        await user.updateOne({ $pull: { followers: req.body.userId } });
-        await currentUser.updateOne({ $pull: { followings: req.params.id } });
+      // const currentUser = await User.findById(req.body.userId);
+      if (user.followers.includes(req.body.userId)) {
+        await User.findByIdAndUpdate(req.params.id, { $pull : { followers : req.body.userId }});
+        await User.findByIdAndUpdate(req.body.userId, { $pull : { followings : req.params.id }});
         return res.status(200).json("user has been unfollowed");
       } else {
         return res.status(403).json("you don't follow this user")
@@ -100,7 +104,7 @@ router.put("/:id/unfollow", ensureLoggedIn, async (req, res, next) => {
     } else {
       return res.status(403).json("you can't unfollow yourself")
     }
-  } catch(e) {
+  } catch (e) {
     return next(e);
   }
 })
