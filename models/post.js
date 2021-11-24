@@ -21,4 +21,12 @@ const PostSchema = new mongoose.Schema({
 );
 
 const Post = mongoose.model("Post", PostSchema);
+// const testPost = new Post({
+//    userId : "something",
+//    desc : "something",
+// });
+// testPost.save()
+//    .then(doc => console.log(doc))
+//    .catch(err => console.log(err));
+
 module.exports = Post;

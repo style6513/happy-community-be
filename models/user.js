@@ -59,4 +59,5 @@ testUser.save().then(doc => {
 .catch(err => {
     console.log(err)
 })
+
 module.exports = User; 

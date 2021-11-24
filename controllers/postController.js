@@ -6,11 +6,50 @@ const { UnauthorizedError } = require("../ExpressError");
 
 exports.getAllPosts = async (req, res, next) => {
    try {
+      // build query
       const queryObj = { ...req.query }
       const excludedFields = ['page', 'sort', 'limit', 'fields'];
-      const posts = await Post.find(req.query)
+      excludedFields.forEach(ele => delete queryObj[ele]);
+
+      // localhost:9000/posts?desc=something&duration[gte]=5
+      // { desc : "something", duration : { $gte : 5 } }
+      // gte, te, lte, lt
+      let queryStr = JSON.stringify(queryObj);
+      queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`)
+      console.log(JSON.parse(queryStr))
+      let query = Post.find(JSON.parse(queryStr))
+
+      // sorting query
+      if(req.query.sort) {
+         const sortBy = req.query.sort.split(",").join(" ")
+         query = query.sort(sortBy)
+      }
+
+      // field limiting 
+      if(req.query.fields) {
+         const fields = req.query.fields.split(",").join(" ");
+         query = query.select(fields);
+      } else {
+         query = query.select("-__v")
+      }
+
+      //pagination
+      // localhost:9000/posts?page=2&limit=10
+      const page = req.query.page * 1 || 1;
+      const limit = req.query.limit * 1 || 100;
+      const skip = (page - 1) * limit
+
+      query = query.skip(skip).limit(limit);
+
+      if(req.query.page) {
+         const numDocs = await Post.countDocuments();
+         if(skip >= numDocs) throw new Error("This apge does not exist")
+      }
+
+      const posts = await query;
       return res.status(200).json(posts)
-   } catch(e) {
+   } 
+   catch(e) {
       return next(e);
    }
 }

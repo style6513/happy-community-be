@@ -1,8 +1,6 @@
-require('./db/db')
 const express = require('express');
 const app = express();
 const cors = require("cors");
-const dotenv = require("dotenv");
 const { NotFoundError, UnauthorizedError } = require("./ExpressError");
 
 // // Routes Imports
@@ -13,10 +11,10 @@ const postRouter = require("./routes/postRoutes");
 const { authenticateJWT } = require('./middlewares/authMiddlewares');
 const morgan = require('morgan');
 
-if(process.env.NODE_ENV === "development") {
-   app.use(morgan("dev"))
-}
-
+if (process.env.NODE_ENV === 'development') {
+   app.use(morgan('dev'));
+ }
+app.use(express.json());
 // cors setup
 const whitelist = ["http://localhost:3000"]
 app.use(cors({
@@ -32,7 +30,7 @@ app.use(cors({
 app.use(authenticateJWT)
 
 // Middleware
-app.use(express.json());
+
 app.use('/appname', appnameController);
 app.use('/auth', authRouter);
 app.use("/users", userController);
