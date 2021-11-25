@@ -52,4 +52,4 @@ class APIFeatures {
    }
 }
 
-module.exports = ApiFeatures;
+module.exports = APIFeatures;

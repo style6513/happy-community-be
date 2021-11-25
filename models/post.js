@@ -7,7 +7,8 @@ const PostSchema = new mongoose.Schema({
    },
    desc : {
       type : String,
-      max : 500,
+      minLength : 1,
+      maxlength : 500,
       trim : true
    },
    imgs : {
@@ -20,13 +21,17 @@ const PostSchema = new mongoose.Schema({
    { timestamps : true }
 );
 
+PostSchema.pre(/^find/, function(next) {
+   this.start = Date.now();
+   next();
+})
+
+PostSchema.post(/^find/, function(docs, next) {
+   console.log(`Query took ${Date.now() - this.start} milliseconds`);
+   console.log(docs);
+   next();
+})
+
 const Post = mongoose.model("Post", PostSchema);
-// const testPost = new Post({
-//    userId : "something",
-//    desc : "something",
-// });
-// testPost.save()
-//    .then(doc => console.log(doc))
-//    .catch(err => console.log(err));
 
 module.exports = Post;

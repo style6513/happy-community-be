@@ -13,8 +13,8 @@ const CommentSchema = new mongoose.Schema({
    text : {
       type : String,
       required : true,
-      min : 1,
-      max : 500,
+      minLength : 1,
+      maxLength : 500,
       trim : true
    },
 }, { timestamps : true });

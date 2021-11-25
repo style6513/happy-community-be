@@ -21,11 +21,11 @@ const userSchema = new mongoose.Schema({
     },
     phone: {
         type: String,
-        validate : {
+        validate :  {
             validator : function(val) {
                 return /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/.test(val);
             },
-            message : props => `${props.value} is not a valid phone number`
+            message : `{VALUE} is not a valid phone number`,
         },
         trim : true,
         required : [true, "can't be blank"]
@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema({
     {timestamps: true}
 );
 
-userSchema.plugin(uniqueValidator, { message : "is already taken" });
+userSchema.plugin(uniqueValidator, { message : `{VALUE} is already taken` });
 const User = mongoose.model("User", userSchema);
 const testUser = new User({
     username : "testUser3",

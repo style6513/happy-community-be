@@ -3,7 +3,6 @@ const Post = require("../models/Post");
 const APIFeatures = require("../utils/apiFeatures");
 const { UnauthorizedError } = require("../ExpressError");
 const Like = require("../models/Like");
-// const { ensureLoggedIn } = require("../middlewares/authMiddlewares");
 
 exports.getNowTrendingPosts = async (req, res, next) => {
    try {
@@ -80,11 +79,11 @@ exports.createPost = async (req, res, next) => {
 }
 
 exports.updatePost = async (req, res, next) => {
-   const post = await Post.findById(req.params.id);
+   const _post = await Post.findById(req.params.id);
    try {
-      if (post.userId === req.body.userId) {
-         await post.updateOne({ $set: req.body });
-         return res.status(200).json("the post has been updated")
+      if (_post.userId === req.body.userId) {
+         const post = await Post.findByIdAndUpdate(req.params.id, req.body, { new : true, runValidators : true });
+         return res.status(200).json(post)
       } else {
          return next(new UnauthorizedError())
       }
