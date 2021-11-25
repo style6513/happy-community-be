@@ -3,6 +3,10 @@ const router = require("express").Router();
 const postController = require("../controllers/postController");
 
 router
+   .route("/now-trending")
+   .get(postController.getNowTrendingPosts);
+
+router
    .route("/")
    .get(postController.getAllPosts)
    .post(postController.createPost);

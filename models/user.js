@@ -48,9 +48,9 @@ const userSchema = new mongoose.Schema({
 userSchema.plugin(uniqueValidator, { message : "is already taken" });
 const User = mongoose.model("User", userSchema);
 const testUser = new User({
-    username : "testUser2",
-    password : "testPassword2",
-    email : "test@test2.com",
+    username : "testUser3",
+    password : "testPassword3",
+    email : "test@test3.com",
     phone : "111-111-8581"
 })
 testUser.save().then(doc => {
