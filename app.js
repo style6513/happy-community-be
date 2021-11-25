@@ -6,7 +6,7 @@ const { NotFoundError, UnauthorizedError } = require("./utils/ExpressError");
 // // Routes Imports
 const authRouter = require("./routes/authRoutes");
 const appnameController = require('./controllers/appnameController');
-const userController = require("./controllers/userController");
+const userRouter = require("./routes/userRoutes");
 const postRouter = require("./routes/postRoutes");
 const globalErrorController = require("./controllers/errorController");
 const { authenticateJWT } = require('./middlewares/authMiddlewares');
@@ -34,7 +34,7 @@ app.use(authenticateJWT)
 
 app.use('/appname', appnameController);
 app.use('/auth', authRouter);
-app.use("/users", userController);
+app.use("/users", userRouter);
 app.use("/posts", postRouter);
 
 app.all("*", (req, res, next) => {

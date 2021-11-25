@@ -45,19 +45,7 @@ const userSchema = new mongoose.Schema({
     {timestamps: true}
 );
 
+// client sends some data about postimages to -> Post(/post/) 
 userSchema.plugin(uniqueValidator, { message : `{VALUE} is already taken` });
 const User = mongoose.model("User", userSchema);
-const testUser = new User({
-    username : "testUser3",
-    password : "testPassword3",
-    email : "test@test3.com",
-    phone : "111-111-8581"
-})
-testUser.save().then(doc => {
-    console.log(doc);
-})
-.catch(err => {
-    console.log(err)
-})
-
 module.exports = User; 

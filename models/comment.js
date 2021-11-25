@@ -17,6 +17,7 @@ const CommentSchema = new mongoose.Schema({
       maxLength : 500,
       trim : true
    },
+   likes : [{ type : mongoose.Schema.Types.ObjectId, ref : "Like" }]
 }, { timestamps : true });
 
 const Comment = mongoose.model("Comment", CommentSchema);

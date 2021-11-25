@@ -5,14 +5,15 @@
   "main": "server.js",
   "scripts": {
     "test": "jest --testEnvironment=node --runInBand ./__tests__",
-    "start:prod": "node server.js",
-    "start": "SET NODE_ENV=development&&nodemon server.js",
-    "debug" : "ndb server.js"
+    "start:prod": "SET NODE_ENV=production&&node server.js",
+    "start": "SET NODE_ENV=development&&npx nodemon server.js",
+    "debug": "ndb server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@shopify/shopify-api": "^2.0.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",

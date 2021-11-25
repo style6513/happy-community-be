@@ -13,6 +13,8 @@ class APIFeatures {
       // localhost:9000/posts?desc=something&duration[gte]=5
       // { desc : "something", duration : { $gte : 5 } }
       // gte, te, lte, lt
+      // https://localhost:3000/post?hashtag=애쉬퍼플  =>  req.query = { hashtag : "애쉬퍼플" }
+
       let queryStr = JSON.stringify(queryObj);
       queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
 
@@ -49,6 +51,11 @@ class APIFeatures {
       this.query = this.query.skip(skip).limit(limit);
 
       return this;
+   }
+   handleHashtags() {
+      if(this.queryString.hashtag) {
+         
+      }
    }
 }
 

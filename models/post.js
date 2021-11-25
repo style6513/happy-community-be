@@ -11,12 +11,13 @@ const PostSchema = new mongoose.Schema({
       maxlength : 500,
       trim : true
    },
-   imgs : {
-      type : Array,
-      default : []
-   },
+   imgs : [{ 
+      type : String, 
+      match : [] //7 max per post
+   }], 
    likes : [{ type : mongoose.Schema.Types.ObjectId, ref : "Like" }],
    comments : [{ type : mongoose.Schema.Types.ObjectId, ref : "Comment" }],
+   hashtags : [{ type : String }] // max 3
 }, 
    { timestamps : true }
 );
