@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const Post = require("../models/Post");
 const APIFeatures = require("../utils/apiFeatures");
-const { UnauthorizedError } = require("../ExpressError");
+const { UnauthorizedError, NotFoundError, BadRequestError } = require("../utils/ExpressError");
 const Like = require("../models/Like");
 
 exports.getNowTrendingPosts = async (req, res, next) => {
@@ -10,11 +10,12 @@ exports.getNowTrendingPosts = async (req, res, next) => {
       // gravity 0.2
       // commentsWeight 2
       // likesWeight 1
-      const nowTrending = await Post.aggregate([
+      const trendingPostAggregate = [
          {
-            $set: {
+            $addFields : {
                numComments: { $size: "$comments" },
-               numLikes: { $size: "$likes" }
+               numLikes: { $size: "$likes" },
+               divideBy: { $multiply: [ { $subtract: ["$$NOW", "$createdAt"] } , 0.2] }
             }
          },
          {
@@ -22,31 +23,21 @@ exports.getNowTrendingPosts = async (req, res, next) => {
                ranking: {
                   $divide: [
                      {
-                        add: [
+                        $add: [
                            { $multiply: ["$numComments", 2] },
                            { $multiply: ["$numLikes", 1] }
                         ]
                      },
-                     {
-                        $multiply: [
-                           0.2,
-                           {
-                              $datediff: {
-                                 startDate: "$$NOW",
-                                 endDate: "$createdAt",
-                                 unit: "day"
-                              }
-                           }
-                        ]
-                     },
-                  ]
+                     "$divideBy"
+                  ],
                }
             }
          },
          {
-            $sort : { ranking : -1 } 
+            $sort : { ranking : -1 }
          }
-      ]);
+      ]
+      const nowTrending = await Post.aggregate(trendingPostAggregate);
       return res.status(200).json(nowTrending)
    } catch (e) {
       return next(e);
@@ -72,6 +63,7 @@ exports.createPost = async (req, res, next) => {
    const newPost = new Post(req.body);
    try {
       const savedPost = await newPost.save();
+      if(!savedPost) return next(new BadRequestError())
       return res.status(200).json(savedPost);
    } catch (e) {
       return next(e);
@@ -82,7 +74,7 @@ exports.updatePost = async (req, res, next) => {
    const _post = await Post.findById(req.params.id);
    try {
       if (_post.userId === req.body.userId) {
-         const post = await Post.findByIdAndUpdate(req.params.id, req.body, { new : true, runValidators : true });
+         const post = await Post.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
          return res.status(200).json(post)
       } else {
          return next(new UnauthorizedError())
@@ -127,6 +119,7 @@ exports.likePost = async (req, res, next) => {
 exports.getAPost = async (req, res, next) => {
    try {
       const post = await Post.findById(req.params.id);
+      if(!post) return next(new NotFoundError(`Can't find ${req.originalUrl}`))
       return res.status(200).json(post)
    } catch (e) {
       return next(e);

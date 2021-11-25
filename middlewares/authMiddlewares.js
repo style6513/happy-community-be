@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { SECRET } = require("../config");
-const { UnauthorizedError } = require("../ExpressError");
+const { UnauthorizedError } = require("../utils/ExpressError");
 /** Middleware: Authenticate user.
  * If a token was provided, verify it, and if valid, store the token payload
  * on res.locals (this will include the id and isAdmin field).

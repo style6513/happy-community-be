@@ -1,13 +1,14 @@
 const express = require('express');
 const app = express();
 const cors = require("cors");
-const { NotFoundError, UnauthorizedError } = require("./ExpressError");
+const { NotFoundError, UnauthorizedError } = require("./utils/ExpressError");
 
 // // Routes Imports
 const authRouter = require("./routes/authRoutes");
 const appnameController = require('./controllers/appnameController');
 const userController = require("./controllers/userController");
 const postRouter = require("./routes/postRoutes");
+const globalErrorController = require("./controllers/errorController");
 const { authenticateJWT } = require('./middlewares/authMiddlewares');
 const morgan = require('morgan');
 
@@ -36,20 +37,9 @@ app.use('/auth', authRouter);
 app.use("/users", userController);
 app.use("/posts", postRouter);
 
+app.all("*", (req, res, next) => {
+   return next(new NotFoundError(`Can't find ${req.originalUrl}`))
+})
 
-app.use((req, res, next) => {
-   return next(new NotFoundError());
-});
-
-app.use((err, req, res, next) => {
-
-   console.error(err.stack);
-
-   const status = err.status || 500;
-   const message = err.message;
-   return res.status(status).json({
-      error: { message, status },
-   });
-});
-
+app.use(globalErrorController);
 module.exports = app;
