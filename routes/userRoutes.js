@@ -1,11 +1,23 @@
 const router = require("express").Router();
 const userController = require("../controllers/userController");
+const {
+  ensureCorrectUserOrAdmin,
+  ensureLoggedInAndNotExpired
+} = require("../middlewares/authMiddlewares");
 
 router
   .route("/:id")
     .get(userController.getUser)
-    .put(userController.updateUser)
-    .delete(userController.deleteUser)
+    .put(
+      ensureLoggedInAndNotExpired,
+      ensureCorrectUserOrAdmin,
+      userController.updateUser
+    )
+    .delete(
+      ensureLoggedInAndNotExpired,
+      ensureCorrectUserOrAdmin,
+      userController.deleteUser
+    )
 
 router
   .route("/friends/:userId")

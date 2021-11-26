@@ -51,6 +51,11 @@ const userSchema = new mongoose.Schema({
     isAdmin : {
         type : Boolean,
         default : false
+    },
+    role : {
+        type : String,
+        enum : ['user', 'moderators'],
+        default : 'user'
     }
 },
     {timestamps: true}
@@ -58,11 +63,23 @@ const userSchema = new mongoose.Schema({
 
 // client sends some data about postimages to -> Post(/post/) 
 userSchema.plugin(uniqueValidator, { message : `{VALUE} is already taken` });
+
 userSchema.pre("save", function(next) {
     // only run this function if password was modified.
     if(!this.isModified("password")) return next();
     this.passwordConfirm = undefined;
     return next();
 })
+
+userSchema.methods.changedPasswordAfter = function(JWTimestamp) {
+    if(this.passwordChangedAt) {
+        const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
+        return JWTimestamp < changedTimestamp
+    }
+    return false;
+}
+
 const User = mongoose.model("User", userSchema);
+
+
 module.exports = User; 
