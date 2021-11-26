@@ -5,7 +5,7 @@ const { authenticateJWT,
    ensureAdmin,
    ensureCorrectUserOrAdmin } = require("./authMiddlewares");
 
-const { UnauthorizedError } = require("../ExpressError");
+const { ExpressError } = require("../utils/ExpressError");
 const testJWT = jwt.sign({ id: 12345, isAdmin: false }, SECRET);
 const badJWT = jwt.sign({ id: 123456, isAdmin: false }, "BAD");
 
@@ -66,7 +66,7 @@ describe("ensureLoggedIn", () => {
       const req = {};
       const res = { locals: {} };
       const next = err => {
-         expect(err instanceof UnauthorizedError).toBeTruthy()
+         expect(err instanceof ExpressError).toBeTruthy()
       };
       ensureLoggedIn(req, res, next);
    })
@@ -87,7 +87,7 @@ describe("ensureAdmin", () => {
       const req = {};
       const res = { locals: { user: { id: 12345, isAdmin: false } } };
       const next = e => {
-         expect(e instanceof UnauthorizedError).toBeTruthy();
+         expect(e instanceof ExpressError).toBeTruthy();
       }
       ensureAdmin(req, res, next)
    });
@@ -96,7 +96,7 @@ describe("ensureAdmin", () => {
       const req = {};
       const res = { locals: {} };
       const next = e => {
-         expect(e instanceof UnauthorizedError).toBeTruthy();
+         expect(e instanceof ExpressError).toBeTruthy();
       }
       ensureAdmin(req, res, next)
    });
@@ -128,7 +128,7 @@ describe("ensureCorrectUserOrAdmin", () => {
     const req = { params: { id: 1} };
     const res = { locals: { user: { id: 2, isAdmin: false } } };
     const next = (e) => {
-      expect(e instanceof UnauthorizedError).toBeTruthy();
+      expect(e instanceof ExpressError).toBeTruthy();
     };
     ensureCorrectUserOrAdmin(req, res, next);
   });
@@ -138,7 +138,7 @@ describe("ensureCorrectUserOrAdmin", () => {
     const req = { params: { id: "test" } };
     const res = { locals: {} };
     const next = (e) => {
-      expect(e instanceof UnauthorizedError).toBeTruthy();
+      expect(e instanceof ExpressError).toBeTruthy();
     };
     ensureCorrectUserOrAdmin(req, res, next)
   });

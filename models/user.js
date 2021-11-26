@@ -10,7 +10,18 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
+        required: true,
+        select : false
+    },
+    passwordConfirm : {
+        type : String,
+        required : true,
+        validate : {
+            validator : function(val) {
+                return this.password === val
+            },
+            message : "Passwords are not the same"
+        }
     },
     email: {
         type: String,
@@ -47,5 +58,11 @@ const userSchema = new mongoose.Schema({
 
 // client sends some data about postimages to -> Post(/post/) 
 userSchema.plugin(uniqueValidator, { message : `{VALUE} is already taken` });
+userSchema.pre("save", function(next) {
+    // only run this function if password was modified.
+    if(!this.isModified("password")) return next();
+    this.passwordConfirm = undefined;
+    return next();
+})
 const User = mongoose.model("User", userSchema);
 module.exports = User; 

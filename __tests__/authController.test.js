@@ -5,7 +5,7 @@ const app = require("../app");
 
 
 beforeAll(async () => await db.connect())
-afterEach(async () => await db.clearDatabase())
+// afterEach()
 
 
 describe("POST /auth/register", () => {
@@ -87,6 +87,6 @@ describe("POST /auth/register", () => {
 });
 
 afterAll(async () => {
-   // await db.clearDatabase()
+   await db.clearDatabase()
    await db.closeDatabase()
 })

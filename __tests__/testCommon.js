@@ -10,6 +10,7 @@ const testDataSetup = async () => {
    const _adminUser = new User({
       username : "admin",
       password : "testpw",
+      passwordConfirm : "testpw",
       email : "admin@admin.com",
       phone : "213-111-2222",
       isAdmin : true
@@ -17,6 +18,7 @@ const testDataSetup = async () => {
    const _testUser = new User({
       username : "test",
       password : "testpw",
+      passwordConfirm : "testpw",
       email : "test@test.com",
       phone : "213-111-2222",
       isAdmin : false
@@ -43,7 +45,6 @@ module.exports.connect = async (callback) => {
       if (e.message.code === 'ETIMEDOUT') {
          mongoose.connect(uri, mongooseOpts);
       }
-      console.log(e);
    });
 
    mongoose.connection.once('open', () => {

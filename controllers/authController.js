@@ -28,6 +28,7 @@ exports.register = async (req, res, next) => {
             username,
             email,
             password: hashedPw,
+            passwordConfirm : hashedPw,
             phone,
             isAdmin : req.body.isAdmin || false
         });
