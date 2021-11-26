@@ -1,10 +1,6 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const { BCRYPT_WORK_FACTOR } = require("../config");
-const {
-  ensureCorrectUserOrAdmin,
-  ensureLoggedIn,
-} = require("../middlewares/authMiddlewares");
 
 // Update user
 exports.updateUser = async (req, res, next) => {

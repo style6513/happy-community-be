@@ -60,7 +60,6 @@ exports.getAllPosts = async (req, res, next) => {
 }
 
 exports.createPost = async (req, res, next) => {
-
    const newPost = new Post(req.body);
    try {
       const savedPost = await newPost.save();
@@ -94,7 +93,7 @@ exports.deletePost = async (req, res, next) => {
          await post.deleteOne();
          return res.status(204).json("the post has been deleted")
       } else {
-         return next(new ExpressError())
+         return next(new ExpressError("Unauthorized", 401))
       }
    } catch (e) {
       return next(e);

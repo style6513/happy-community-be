@@ -1,9 +1,12 @@
 const router = require("express").Router();
 const userController = require("../controllers/userController");
+const authController = require("../controllers/authController");
 const {
   ensureCorrectUserOrAdmin,
   ensureLoggedInAndNotExpired
 } = require("../middlewares/authMiddlewares");
+
+router.post("/forgotPassword", authController.forgotPassword)
 
 router
   .route("/:id")

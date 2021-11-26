@@ -1,5 +1,5 @@
 const router = require("express").Router();
-
+const authMiddlewares = require("../middlewares/authMiddlewares");
 const postController = require("../controllers/postController");
 
 router
@@ -9,7 +9,10 @@ router
 router
    .route("/")
    .get(postController.getAllPosts)
-   .post(postController.createPost);
+   .post(
+      authMiddlewares.ensureLoggedInAndNotExpired,
+      postController.createPost
+   );
 
 router
    .route("/:id")
