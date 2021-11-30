@@ -1,11 +1,17 @@
 const router = require("express").Router();
 const authMiddlewares = require("../middlewares/authMiddlewares");
 const postController = require("../controllers/postController");
+const commentRouter = require("./commentRoutes");
 
+// posts/:postId/comments will use commentRoutes
+router.use("/:postId/comments", commentRouter);
+
+// GET posts/now-trending
 router
    .route("/now-trending")
    .get(postController.getNowTrendingPosts);
 
+// posts/
 router
    .route("/")
    .get(postController.getAllPosts)
@@ -14,14 +20,15 @@ router
       postController.createPost
    );
 
+// posts/:postId
 router
-   .route("/:id")
+   .route("/:postId")
    .put(postController.updatePost)
    .delete(postController.deletePost)
    .get(postController.getAPost)
 
 router
-   .route("/:id/like")
+   .route("/:postId/like")
    .put(postController.likePost)
 
 router

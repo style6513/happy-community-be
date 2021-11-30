@@ -4,7 +4,7 @@ const HashtagSchema = new mongoose.Schema({
     type : String,
     minlength : 1,
     maxlength : 20,
-    
+    unique : true
   },
   posts : [{ type : mongoose.Schema.Types.ObjectId, ref : "Post" }]
 }, 

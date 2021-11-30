@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { SECRET } = require("../config");
 const { ExpressError } = require("../utils/ExpressError");
-
+const Comment = require("../models/Comment");
 /** Middleware: Authenticate user.
  * If a token was provided, verify it, and if valid, store the token payload
  * on res.locals (this will include the id and isAdmin field).
@@ -93,10 +93,24 @@ function restrictTo(...roles) {
   } 
 }
 
+async function checkCommentOwnership(req, res, next) {
+  try {
+    const comment = await Comment.findById(req.params.commentId);
+    if(comment.userId !== req.user.id) {
+      return next(new ExpressError("Unauthorized", 401))
+    }
+    return next();
+  } catch(e) {
+    return next(e);
+  }
+}
+
+
 module.exports = {
   authenticateJWT,
   ensureLoggedInAndNotExpired,
   ensureAdmin,
   ensureCorrectUserOrAdmin,
-  restrictTo
+  restrictTo,
+  checkCommentOwnership
 };

@@ -72,12 +72,11 @@ exports.createPost = async (req, res, next) => {
 };
 
 // posts/:postId
-
 exports.updatePost = async (req, res, next) => {
-  const _post = await Post.findById(req.params.id);
+  const _post = await Post.findById(req.params.postId);
   try {
     if (_post.userId === req.body.userId) {
-      const post = await Post.findByIdAndUpdate(req.params.id, req.body, {
+      const post = await Post.findByIdAndUpdate(req.params.postId, req.body, {
         new: true,
         runValidators: true,
       });
@@ -92,7 +91,7 @@ exports.updatePost = async (req, res, next) => {
 
 exports.deletePost = async (req, res, next) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(req.params.postId);
     if (post.userId === req.body.userId) {
       await post.deleteOne();
       return res.status(204).json("the post has been deleted");
@@ -106,22 +105,26 @@ exports.deletePost = async (req, res, next) => {
 
 exports.likePost = async (req, res, next) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(req.params.postId);
     if (!post.likes.includes(req.body.userId)) {
       const _newLike = new Like({
         userId: req.body.userId,
-        postId: req.params.id,
+        postId: req.params.postId,
       });
       const newLike = await _newLike.save();
 
       await Post.findByIdAndUpdate(
-        req.params.id,
+        req.params.postId,
         { $addToSet: { likes: newLike._id } },
         { returnOriginal: false }
       );
       return res.status(200).json("the post has been liked");
     } else {
-      await Post.findByIdAndUpdate(req.params.id, {
+      await Like.findOneAndDelete({ 
+        userId : req.user.id, 
+        postId : req.params.postId
+      });
+      await Post.findByIdAndUpdate(req.params.postId, {
         $pull: { likes: req.body.userId },
       });
       return res.status(200).json("the post has been disliked");
@@ -133,7 +136,7 @@ exports.likePost = async (req, res, next) => {
 
 exports.getAPost = async (req, res, next) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(req.params.postId);
     if (!post) {
       return next(new ExpressError(`Can't find ${req.originalUrl}`, 400));
     }
@@ -148,8 +151,8 @@ exports.getUserPosts = async (req, res, next) => {
     const user = await User.findOne({ username: req.params.username });
     const posts = await Post.find({ userId: user._id });
     return res.status(200).json(posts);
-  } 
-  catch (e) {
+  } catch (e) {
     return next(e);
   }
 };
+
