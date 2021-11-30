@@ -6,39 +6,31 @@ const {
   ensureLoggedInAndNotExpired
 } = require("../middlewares/authMiddlewares");
 
+router.get("/friends/:userId", userController.getFriends);
 router.post("/forgotPassword", authController.forgotPassword)
 router.patch("/resetPassword/:token", authController.resetPassword);
 
-router
-  .route("/:id")
-    .get(userController.getUser)
-    .put(
-      ensureLoggedInAndNotExpired,
-      ensureCorrectUserOrAdmin,
-      userController.updateUser
-    )
-    .delete(
-      ensureLoggedInAndNotExpired,
-      ensureCorrectUserOrAdmin,
-      userController.deleteUser
-    )
+router.use(ensureLoggedInAndNotExpired);
 
 router
-  .route("/friends/:userId")
-    .get(userController.getFriends)
+  .route("/:id")
+  .get(userController.getUser)
+  .put(
+    ensureCorrectUserOrAdmin,
+    userController.updateUser
+  )
+  .delete(
+    ensureCorrectUserOrAdmin,
+    userController.deleteUser
+  )
+
 
 router
   .route("/:id/follow")
-    .put(
-      ensureLoggedInAndNotExpired,
-      userController.followUser
-    );
+  .put(userController.followUser);
     
 router
   .route("/:id/unfollow")
-    .put(
-      ensureLoggedInAndNotExpired,
-      userController.followUser
-    )
+  .put(userController.followUser)
 
 module.exports = router;

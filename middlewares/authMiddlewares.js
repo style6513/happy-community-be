@@ -96,7 +96,8 @@ function restrictTo(...roles) {
 async function checkCommentOwnership(req, res, next) {
   try {
     const comment = await Comment.findById(req.params.commentId);
-    if(comment.userId !== req.user.id) {
+    if(!comment) return next(new ExpressError("Comment does not exist", 404));
+    if(comment.userId !== req.user._id) {
       return next(new ExpressError("Unauthorized", 401))
     }
     return next();

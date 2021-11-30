@@ -5,7 +5,7 @@ const { ExpressError } = require("../utils/ExpressError");
 exports.createComment = async (req, res, next) => {
   try {
     const newComment = await Comment.create({
-      userId: req.user.id,
+      userId: req.user._id,
       postId: req.params.postId,
       text: req.body.text,
     });

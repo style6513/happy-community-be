@@ -3,13 +3,12 @@ const Post = require("../models/Post");
 const APIFeatures = require("../utils/apiFeatures");
 const { ExpressError } = require("../utils/ExpressError");
 const Like = require("../models/Like");
-
-exports.getNowTrendingPosts = async (req, res, next) => {
-  try {
     // ranking = (numberOfComments * commentsWeight + numberOfLikes * likesWeight) / (daysSincePost * gravity)
     // gravity 0.2
     // commentsWeight 2
     // likesWeight 1
+exports.getNowTrendingPosts = async (req, res, next) => {
+  try {
     const trendingPostAggregate = [
       {
         $addFields: {

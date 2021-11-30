@@ -19,7 +19,6 @@ const handleValidationErrorDB = err => {
 }
 
 const sendErrorDev = (err, res) => {
-  console.log(err instanceof mongoose.CastError)
   return res.status(err.status).json({
     status: err.status,
     message : err.message, 
