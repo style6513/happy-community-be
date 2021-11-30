@@ -1,8 +1,34 @@
 const User = require("../models/User");
+const multer = require("multer");
 const bcrypt = require("bcryptjs");
 const { BCRYPT_WORK_FACTOR } = require("../config");
+const { ExpressError } = require("../utils/ExpressError");
 
-// Update user
+const multerStorage = multer.diskStorage({
+  destination : (req, file, cb) => {
+    cb(null, "public/img/users")
+  },
+  filename : (req, file, cb) => {
+    // user-{userId}-{currentTimeStamp}.jpeg
+    const fileExtention = file.mimetype.split("/")[1];
+    cb(null, `user-${req.user._id}-${Date.now()}.${fileExtention}`)
+  }
+})
+
+const multerFilter = (req, file, cb) => {
+  if(file.mimetype.startsWith("image")) {
+    cb(null, true)
+  } else {
+    cb(new ExpressError("Images only", 400), false)
+  }
+}
+
+const upload = multer({ storage : multerStorage, fileFilter : multerFilter });
+
+exports.uploadUserPhoto = async (req, res, next) => {
+
+}
+
 exports.updateUser = async (req, res, next) => {
   if (req.body.password) {
     req.body.password = await bcrypt.hash(
@@ -13,6 +39,22 @@ exports.updateUser = async (req, res, next) => {
   try {
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
+      { $set: req.body },
+      { returnOriginal: false }
+    )
+    return res.status(200).json({ updatedUser });
+  } catch (e) {
+    return next(e);
+  }
+}
+
+exports.updateMe = async (req, res, next) => {
+  if (req.body.password) {
+    req.body.password = await bcrypt.hash(req.body.password, BCRYPT_WORK_FACTOR);
+  }
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
       { $set: req.body },
       { returnOriginal: false }
     )

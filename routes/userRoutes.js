@@ -9,6 +9,8 @@ const {
 router.get("/friends/:userId", userController.getFriends);
 router.post("/forgotPassword", authController.forgotPassword)
 router.patch("/resetPassword/:token", authController.resetPassword);
+router.patch("/updateMe", upload.single("photo"), userController.updateUser)
+
 
 router.use(ensureLoggedInAndNotExpired);
 
