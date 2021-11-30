@@ -28,12 +28,10 @@ function authenticateJWT(req, res, next) {
  */
 async function ensureLoggedInAndNotExpired(req, res, next) {
   try {
-    let token;
     if (!res.locals.user) {
       return next(new ExpressError("Unauthorized", 401));
     }
-    token = req.headers.authorization.split(" ")[1];
-    const decoded = jwt.verify(token, SECRET);
+    const decoded = res.locals.user;
     const currentUser = await User.findById(decoded.id);
     if (!currentUser) {
       return next(

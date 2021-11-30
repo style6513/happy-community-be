@@ -53,9 +53,7 @@ class APIFeatures {
       return this;
    }
    handleHashtags() {
-      if(this.queryString.hashtag) {
-         
-      }
+      return this;
    }
 }
 

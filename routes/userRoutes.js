@@ -7,6 +7,7 @@ const {
 } = require("../middlewares/authMiddlewares");
 
 router.post("/forgotPassword", authController.forgotPassword)
+router.patch("/resetPassword/:token", authController.resetPassword);
 
 router
   .route("/:id")
@@ -28,10 +29,16 @@ router
 
 router
   .route("/:id/follow")
-    .put(userController.followUser);
+    .put(
+      ensureLoggedInAndNotExpired,
+      userController.followUser
+    );
     
 router
   .route("/:id/unfollow")
-    .put(userController.followUser)
+    .put(
+      ensureLoggedInAndNotExpired,
+      userController.followUser
+    )
 
 module.exports = router;

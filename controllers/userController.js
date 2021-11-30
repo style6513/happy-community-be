@@ -24,7 +24,7 @@ exports.updateUser = async (req, res, next) => {
 
 exports.deleteUser = async (req, res, next) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
+    await User.findByIdAndUpdate(req.params.id, { active : false });
     return res.status(200).json({ deleted: req.params.id });
   } catch (e) {
     return next(e);

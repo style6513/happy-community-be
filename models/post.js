@@ -16,12 +16,32 @@ const PostSchema = new mongoose.Schema({
    comments : [{ type : mongoose.Schema.Types.ObjectId, ref : "Comment" }],
    hashtags : [{ type : String }] // max 3
 }, 
-   { timestamps : true }
+   { 
+      toJSON : { virtuals : true },
+      toObject : { virtuals : true },
+      timestamps : true 
+   }
 );
 
+// PostSchema.virtual("likes", {
+//    ref : "Like",
+//    foreignField : "postId",
+//    localField : "_id"
+// })
 PostSchema.pre(/^find/, function(next) {
    this.start = Date.now();
    next();
+})
+
+PostSchema.pre(/^find/, function(docs, next) {
+   this.populate({
+      path : "comments",
+      select : "-__v -postId"
+   }).populate({
+      path : "likes",
+      select : "userId"
+   });
+   return next();
 })
 
 PostSchema.post(/^find/, function(docs, next) {
