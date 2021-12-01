@@ -7,6 +7,7 @@ const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const hpp = require("hpp");
+const path = require("path");
 
 // // Routes Imports
 const authRouter = require("./routes/authRoutes");
@@ -18,6 +19,7 @@ const globalErrorController = require("./controllers/errorController");
 const { authenticateJWT } = require("./middlewares/authMiddlewares");
 const morgan = require("morgan");
 
+app.use(express.static(path.join(__dirname, 'public')))
 // Set security HTTP headers
 app.use(helmet());
 

@@ -1,6 +1,8 @@
 const crypto = require("crypto");
 const mongoose = require("mongoose");
 const uniqueValidator = require("mongoose-unique-validator");
+const {BCRYPT_WORK_FACTOR} = require("../config");
+const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema(
   {
@@ -77,7 +79,14 @@ const userSchema = new mongoose.Schema(
 
 // client sends some data about postimages to -> Post(/post/)
 userSchema.plugin(uniqueValidator, { message: `{VALUE} is already taken` });
+userSchema.pre("save", async function (next) {
+  // only run this function if password was modified OR if this is a new user.
+  if (!this.isModified("password")) return next();
 
+  this.password = await bcrypt.hash(this.password, BCRYPT_WORK_FACTOR)
+  this.passwordConfirm = undefined;
+  return next();
+});
 userSchema.pre("save", function (next) {
   // only run this function if password was modified OR if this is a new user.
   if (!this.isModified("password") || this.isNew) return next();

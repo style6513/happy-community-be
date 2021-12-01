@@ -1,38 +1,41 @@
 const router = require("express").Router();
-const authMiddlewares = require("../middlewares/authMiddlewares");
-const postController = require("../controllers/postController");
+const { ensureLoggedInAndNotExpired, verifyPostOwnership } = require("../middlewares/authMiddlewares");
+const { getUserPosts, getNowTrendingPosts, getAllPosts, createPost, updatePost, deletePost, getAPost, likePost } = require("../controllers/postController");
 const commentRouter = require("./commentRoutes");
 
 // posts/:postId/comments will use commentRoutes
 router.use("/:postId/comments", commentRouter);
+router.get("/profile/:username", getUserPosts);
 
 // GET posts/now-trending
 router
    .route("/now-trending")
-   .get(postController.getNowTrendingPosts);
+   .get(getNowTrendingPosts);
 
 // posts/
 router
    .route("/")
-   .get(postController.getAllPosts)
+   .get(getAllPosts)
    .post(
-      authMiddlewares.ensureLoggedInAndNotExpired,
-      postController.createPost
+      ensureLoggedInAndNotExpired,
+      createPost
    );
 
 // posts/:postId
 router
    .route("/:postId")
-   .put(postController.updatePost)
-   .delete(postController.deletePost)
-   .get(postController.getAPost)
+   .put(
+      ensureLoggedInAndNotExpired,
+      verifyPostOwnership,
+      updatePost
+   )
+   .delete(ensureLoggedInAndNotExpired, verifyPostOwnership, deletePost)
+   .get(getAPost)
 
 router
    .route("/:postId/like")
-   .put(postController.likePost)
+   .put(ensureLoggedInAndNotExpired, likePost)
 
-router
-   .route("/profile/:username")
-   .get(postController.getUserPosts);
+
 
 module.exports = router;

@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "jest --testEnvironment=node --runInBand ./__tests__",
+    "test": "mocha --recursive --exit --timeout 10000",
     "start:prod": "SET NODE_ENV=production&&node server.js",
     "start": "SET NODE_ENV=development&&npx nodemon server.js",
     "debug": "ndb server.js"
@@ -17,6 +17,7 @@
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
+    "expect": "^27.4.2",
     "express": "^4.17.1",
     "express-mongo-sanitize": "^2.1.0",
     "express-rate-limit": "^5.5.1",
@@ -32,8 +33,5 @@
     "nodemailer": "^6.7.1",
     "supertest": "^6.1.6",
     "xss-clean": "^0.1.1"
-  },
-  "jest": {
-    "testEnvironment": "node"
   }
 }

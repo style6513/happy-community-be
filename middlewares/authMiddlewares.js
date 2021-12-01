@@ -35,7 +35,7 @@ async function ensureLoggedInAndNotExpired(req, res, next) {
     const currentUser = await User.findById(decoded.id);
     if (!currentUser) {
       return next(
-        new ExpressError("The user belonging to this token no longer exists")
+        new ExpressError("The user belonging to this token no longer exists", 401)
       );
     }
     if (currentUser.changedPasswordAfter(decoded.iat)) {
@@ -44,7 +44,6 @@ async function ensureLoggedInAndNotExpired(req, res, next) {
       );
     }
     req.user = currentUser;
-    res.locals.user = currentUser;
     return next();
   } catch (e) {
     return next(e);
@@ -93,6 +92,19 @@ function restrictTo(...roles) {
   } 
 }
 
+async function verifyPostOwnership(req, res, next) {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if(!post) return next(new ExpressError("Post does not exist", 404));
+    if(post.userId !== res.locals.user.id) {
+      return next(new ExpressError("Unauthorized", 401))
+    }
+    return next();
+  } catch(e) {
+    return next(e);
+  }
+}
+
 async function checkCommentOwnership(req, res, next) {
   try {
     const comment = await Comment.findById(req.params.commentId);
@@ -113,5 +125,6 @@ module.exports = {
   ensureAdmin,
   ensureCorrectUserOrAdmin,
   restrictTo,
-  checkCommentOwnership
+  checkCommentOwnership,
+  verifyPostOwnership
 };

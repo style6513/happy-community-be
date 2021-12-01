@@ -45,5 +45,25 @@ exports.deleteComment = async (req, res, next) => {
 }
 
 exports.toggleLikeComment = async (req, res, next) => {
-
+  try {
+    const { postId, commentId } = req.params;
+    const like = await Like.findOne({
+      userId : req.user._id,
+      postId,
+      commentId
+    })
+    if(like) {
+      await Like.findByIdAndDelete(like._id);
+      return res.status(200).json(`Unliked comment ${commentId}`)
+    } else {
+      const newLike = await Like.create({
+        userId : req.user._id,
+        postId,
+        commentId
+      });
+      return res.status(200).json(newLike)
+    }
+  } catch(e) {
+    return next(e);
+  }
 }

@@ -72,17 +72,12 @@ exports.createPost = async (req, res, next) => {
 
 // posts/:postId
 exports.updatePost = async (req, res, next) => {
-  const _post = await Post.findById(req.params.postId);
   try {
-    if (_post.userId === req.body.userId) {
       const post = await Post.findByIdAndUpdate(req.params.postId, req.body, {
         new: true,
         runValidators: true,
       });
       return res.status(200).json(post);
-    } else {
-      return next(new ExpressError());
-    }
   } catch (e) {
     return next(e);
   }
@@ -90,13 +85,8 @@ exports.updatePost = async (req, res, next) => {
 
 exports.deletePost = async (req, res, next) => {
   try {
-    const post = await Post.findById(req.params.postId);
-    if (post.userId === req.body.userId) {
-      await post.deleteOne();
+      await Post.findByIdAndDelete(req.params.postId)
       return res.status(204).json("the post has been deleted");
-    } else {
-      return next(new ExpressError("Unauthorized", 401));
-    }
   } catch (e) {
     return next(e);
   }
@@ -105,7 +95,7 @@ exports.deletePost = async (req, res, next) => {
 exports.likePost = async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.postId);
-    if (!post.likes.includes(req.body.userId)) {
+    if (!post.likes.includes(req.user.id)) {
       const _newLike = new Like({
         userId: req.body.userId,
         postId: req.params.postId,

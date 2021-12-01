@@ -1,24 +1,24 @@
 const router = require("express").Router({ mergeParams: true });
-const authMiddlewares = require("../middlewares/authMiddlewares");
-const commentController = require("../controllers/commentController");
+const { ensureLoggedInAndNotExpired, checkCommentOwnership } = require("../middlewares/authMiddlewares");
+const { getAllCommentsForPost, getAComment, deleteComment, toggleLikeComment } = require("../controllers/commentController");
 
 // posts/:postId/comments
 router
   .route("/")
-  .get(commentController.getAllCommentsForPost)
+  .get(getAllCommentsForPost)
   .post(
-    authMiddlewares.ensureLoggedInAndNotExpired,
-    commentController.createComment
+    ensureLoggedInAndNotExpired,
+    createComment
   );
 
 // posts/:postId/comments/:commentId
 router
   .route("/:commentId")
-  .get(commentController.getAComment)
+  .get(getAComment)
   .delete(
-    authMiddlewares.ensureLoggedInAndNotExpired,
-    authMiddlewares.checkCommentOwnership,
-    commentController.deleteComment
+    ensureLoggedInAndNotExpired,
+    checkCommentOwnership,
+    deleteComment
   )
 
 
@@ -26,7 +26,8 @@ router
 router
   .route("/:commentId/likes")
   .put(
-    authMiddlewares.ensureLoggedInAndNotExpired,
+    ensureLoggedInAndNotExpired,
+    toggleLikeComment
   )
 
 

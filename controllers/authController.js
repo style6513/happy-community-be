@@ -8,7 +8,7 @@ const jsonschema = require("jsonschema");
 const userRegisterSchema = require("../validationSchema/userRegisterSchema.json");
 const sendEmail = require("../utils/email");
 
-exports.createToken = (user) => {
+const createToken = (user) => {
   let payload = {
     id: user._id,
     isAdmin: user.isAdmin || false,
@@ -16,18 +16,28 @@ exports.createToken = (user) => {
   return jwt.sign(payload, SECRET, { expiresIn: "3d" });
 };
 
-exports.createCookie = function(token, res) {
-  const cookieOptions = {
-    expires : new Date( 
+const createSendToken = (user, statusCode, req, res) => {
+  const token = createToken(user);
+  res.cookie('jwt', token, {
+    expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
-    httpOnly: true 
-  };
-  if(proccess.env.NODE_ENV === "production") {
-    cookieOptions.secure = true;
-  }
-  res.cookie("jwt", token, cookieOptions)
+    httpOnly: true,
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
+  });
+
+  // Remove password from output
+  user.password = undefined;
+
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: {
+      user
+    }
+  });
 }
+
 
 exports.register = async (req, res, next) => {
   const validator = jsonschema.validate(req.body, userRegisterSchema);
@@ -48,10 +58,7 @@ exports.register = async (req, res, next) => {
     });
 
     const savedUser = await newUser.save();
-    const token = this.createToken(savedUser);
-    const { password, ...others } = savedUser._doc;
-    this.createCookie(token, res)
-    return res.status(201).json({ ...others, token });
+    createSendToken(savedUser, 201, req, res)
   } catch (e) {
     return next(e);
   }
@@ -59,16 +66,14 @@ exports.register = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
   try {
-    const user = await User.findOne({ username: req.body.username });
+    const user = await User.findOne({ username: req.body.username }).select(`+password`)
     if (!user) return next(new ExpressError("Invalid credentials", 401));
-
     const isValid = await bcrypt.compare(req.body.password, user.password);
-    if (isValid) {
-      const accessToken = this.createToken(user);
-      const { password, ...others } = user._doc;
-      return res.status(200).json({ ...others, accessToken });
+    if (!isValid) {
+      return next(new ExpressError("Invalid credentials", 401));
     }
-    return next(new ExpressError("Invalid credentials", 401));
+    createSendToken(user, 200, req, res)
+
   } catch (e) {
     return next(e);
   }
@@ -135,10 +140,25 @@ exports.resetPassword = async (req, res, next) => {
       await user.save();
       
       // log the user in, send JWT.
-      const token = this.createToken(user);
-      return res.status(200).json({ token })
+      createSendToken(user, 200, req, res)
   } 
   catch (e) {
     return next(e);
   }
 };
+
+exports.updatePassword = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id).select("+password");
+
+    if(!(await bcrypt.compare(req.body.passwordCurrent, user.password))) {
+      return next(new ExpressError("Your current password is wrong.", 401))
+    }
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
+    await user.save();
+    createSendToken(user, 200, req, res);
+  } catch(e) {
+    return next(e);
+  }
+}
