@@ -1,53 +1,77 @@
-require('./db/db')
-const express = require('express');
+const express = require("express");
 const app = express();
 const cors = require("cors");
-const dotenv = require("dotenv");
-const { NotFoundError, UnauthorizedError } = require("./ExpressError");
+const { ExpressError } = require("./utils/ExpressError");
+const rateLimit = require("express-rate-limit");
+const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
+const xss = require("xss-clean");
+const hpp = require("hpp");
+const path = require("path");
 
 // // Routes Imports
-const authController = require("./controllers/authController");
-const appnameController = require('./controllers/appnameController');
-const userController = require("./controllers/userController");
-const { authenticateJWT } = require('./middlewares/authMiddlewares');
-const morgan = require('morgan');
+const authRouter = require("./routes/authRoutes");
+const appnameController = require("./controllers/appnameController");
+const userRouter = require("./routes/userRoutes");
+const postRouter = require("./routes/postRoutes");
+const globalErrorController = require("./controllers/errorController");
 
-dotenv.config();
+const { authenticateJWT } = require("./middlewares/authMiddlewares");
+const morgan = require("morgan");
+
+app.use(express.static(path.join(__dirname, 'public')))
+// Set security HTTP headers
+app.use(helmet());
+
+// development logging.
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
+
+// Body parser, reading data from body into req.body
+app.use(express.json());
+
+// Data sanitization against NoSQL query injection
+app.use(mongoSanitize());
+
+// Data sanitization against XSS
+app.use(xss());
+
+// Prevent parameter pollution
+app.use(hpp());
 
 // cors setup
-const whitelist = ["http://localhost:3000"]
-app.use(cors({
-   origin: function (origin, cb) {
+const whitelist = ["http://localhost:3000"];
+app.use(
+  cors({
+    origin: function (origin, cb) {
       if (whitelist.includes(origin) || !origin) {
-         cb(null, true)
+        cb(null, true);
       } else {
-         cb(new UnauthorizedError("Not allowed by CORS"))
+        cb(new ExpressError("Not allowed by CORS", 401));
       }
-   }
-}));
+    },
+  })
+);
 
-app.use(authenticateJWT)
-
-// Middleware
-app.use(express.json());
-app.use(morgan("dev"))
-app.use('/appname', appnameController);
-app.use('/auth', authController);
-app.use("/users", userController);
-
-app.use((req, res, next) => {
-   return next(new NotFoundError());
+// rate limit for DDOS protection, only allow 250 requests from the same IP in one hour
+const limiter = rateLimit({ 
+  max : 250,
+  windowMs : 60 * 60 * 1000,
+  message : "Too many requests from this IP, please try again in a hour"
 });
 
-app.use((err, req, res, next) => {
+// authenticate jwt on all routes.
+app.use(authenticateJWT);
 
-   console.error(err.stack);
+app.use("/appname", appnameController);
+app.use("/auth", authRouter);
+app.use("/users", userRouter);
+app.use("/posts", postRouter);
 
-   const status = err.status || 500;
-   const message = err.message;
-   return res.status(status).json({
-      error: { message, status },
-   });
+app.all("*", (req, res, next) => {
+  return next(new ExpressError(`Can't find ${req.originalUrl}`, 404));
 });
 
+app.use(globalErrorController);
 module.exports = app;
